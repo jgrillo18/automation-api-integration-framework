@@ -1,151 +1,175 @@
-# Automation API Integration Framework (SaaS)
+# Framework de Integración y Automatización (SaaS)
 
-**Fin real del repositorio:**
+Proyecto demostrativo que implementa una plataforma multi‑tenant para conectar
+sistemas empresariales aislados, definir "workflows" automáticos y ejecutar
+procesos con un motor propio. La idea es que una empresa pueda decir “cuando se
+cree una orden en el ERP, envíala al CRM” y que eso ocurra sin intervención
+humana.
 
-Plataforma para conectar sistemas empresariales aislados, automatizar procesos
-repetitivos y convertir integración técnica en un servicio facturable. El objetivo es
-dejar a las empresas decir cosas como "cuando se cree una orden en el ERP, mándala
-a CRM" y que todo pase sin intervención humana.
+Contiene backend en FastAPI, frontend en React, base de datos PostgreSQL y
+se ejecuta todo mediante Docker Compose.
 
-## Características principales
+---
 
-1. **Autenticación multi-tenant**: cada organización tiene su espacio aislado.
-2. **Gestión de workflows**: crear y listar automatizaciones por organización.
-3. **Motor de ejecución**: workflows se ejecutan con reintentos, logs JSON, manejo de errores.
-4. **Scheduler**: job periódico cada 5 minutos que dispara todos los workflows.
-5. **Dashboard básico**: consulta de cantidad de workflows y ejecuciones por tenant.
-6. **Arquitectura Dockerizada**: backend, frontend y Postgres listos para levantarse con Compose.
-
-## Estructura del proyecto
+## 📂 Estructura del repositorio
 
 ```
 automation-api-integration-framework/
-├── backend/    # API en FastAPI + SQLAlchemy
-├── frontend/   # SPA en React (Vite)
+├── backend/    # API FastAPI + SQLAlchemy + Alembic
+├── frontend/   # SPA React (Vite) servida por nginx
 └── docker-compose.yml
 ```
 
-## Requisitos
+---
 
-- Docker & Docker Compose
-- Python 3.11 (solo para desarrollo del backend fuera de contenedor)
-- Node 18+ (solo para desarrollo del frontend fuera de contenedor)
+## 🚀 Requisitos de desarrollo
 
-## Backend
+- Docker 24+ y Docker Compose
+- Python 3.11 (solo si desarrollas el backend fuera de contenedor)
+- Node 18+ (solo si desarrollas el frontend fuera de contenedor)
 
-1. `cd backend`
-2. `pip install -r requirements.txt`
-3. `uvicorn app.main:app --reload`
+> El uso normal no requiere instalar nada: basta `docker compose up --build`.
 
-La base de datos Postgres se configura mediante `DATABASE_URL` en `app/core/config.py`.
+---
 
-### Endpoints principales
+## 🧩 Funcionalidades principales
 
-- `POST /auth/register` Registro (email, password, organization)
-- `POST /auth/login` Login devuelve token JWT
-- `GET /workflows/` Lista workflows del tenant
-- `POST /workflows/` Crea workflow (name, type)
-- `GET /dashboard/` Obtiene conteos de workflows y ejecuciones
+1. **Multi‑tenant con aislamiento**: cada organización ve solo sus datos.
+2. **Usuarios y roles**: miembros y administradores dentro de cada tenant.
+3. **Gestión de workflows**: creación, edición, ejecución manual.
+4. **Historial de ejecuciones**: almacena resultado y metadatos JSON.
+5. **Integraciones simuladas**: webhooks, email y Slack configurables.
+6. **Scheduler periódico**: dispara todos los workflows cada 5 minutos.
+7. **Panel de administración**: crear usuarios/organizaciones desde la UI.
+8. **Prometheus metrics**: `/metrics` expuesto por el backend.
+9. **Frontend sencillo**: login, registro, dashboard, workflows, administración
+   e historial.
 
-El token se envía con `Authorization: Bearer <token>`.
+---
 
-## Frontend
-
-React simple con páginas de login, dashboard y workflows. Ajustar según necesidades.
-
-> El frontend se sirve con Nginx en el puerto **80** dentro del contenedor.
-> Dado que en Windows el puerto 80 suele estar reservado, la configuración de
-> Docker Compose mapea `8080:80` por defecto.  Usa `http://localhost:8080` en el
-> navegador para ver la aplicación (antes utilizábamos 5173 en modo desarrollo).
-
-## Inicializar con Docker
+## 🧱 Arranque rápido con Docker
 
 ```bash
 docker compose up --build
 ```
 
-Esto iniciará Postgres, el backend y el frontend.
+Esto levanta:
+- PostgreSQL en `db` (puerto 5432)
+- Backend FastAPI en `backend` (puerto 8000)
+- Frontend en `frontend` (puerto 8080 mapeado a 80 de nginx)
 
-## Migraciones de base de datos
+El contenedor backend ejecuta automáticamente las migraciones sobre la base de
+datos gracias al `entrypoint.sh`.
 
-La gestión del esquema se realiza con **Alembic**. Los archivos de configuración
-están en `backend/alembic` y el `alembic.ini` en la raíz del proyecto.
-
-# Para crear o aplicar migraciones:
-
-1. copia el fichero de ejemplo: `cp .env.example .env` y ajusta valores si es necesario
-2. arranca la base de datos (`docker compose up -d db`) o ten un Postgres accesible
-3. ejecuta los comandos desde el directorio `backend`:
-
-```bash
-cd backend
-alembic revision --autogenerate -m "tu mensaje"
-alembic upgrade head
-```
-
-> La imagen de Docker ya incluye un *entrypoint* que corre `alembic upgrade head`
-> automáticamente al iniciar el contenedor, así que en despliegues en la nube no
-> tienes que preocuparte de ejecutar migraciones manualmente.
-
-
-El `env.py` ya está preparado para leer `DATABASE_URL` desde los ajustes y usar
-los metadatos de `app.core.database.Base`.
-
-> El código de inicio (`app/main.py`) sólo ejecuta `Base.metadata.create_all` si
-> `ENV=development`, de modo que en entornos de staging/producción usas las
-> migraciones.
-
-## Configuración por entorno
-
-Las variables se definen en un archivo `.env` (mira `.env.example`).
-`app/core/config.py` utiliza `pydantic-settings` para leer:
-
-```python
-ENV: str = "development"  # development|staging|production
-DATABASE_URL: str
-SECRET_KEY: str
-ACCESS_TOKEN_EXPIRE_MINUTES: int
-```
-
-Cambia `ENV` para comportamientos distintos y no olvide usar la misma .env en
-los contenedores (Docker Compose lee automáticamente `.env`).
-
-## Contenedores optimizados
-
-Los Dockerfiles fueron convertidos a imágenes más ligeras y multitarea:
-
-- **backend** usa `python:3.11-slim` y sólo copia la app tras instalar
-  dependencias.
-- **frontend** está listo para construir con Node y servir la versión de
-  producción con un servidor ligero (puedes añadir un stage `nginx` si quieres).
-
-Esto reduce el tamaño y mejora el tiempo de despliegue.
-
-## Despliegue en la nube
-
-La aplicación puede empacarse como servicio Docker y subirse a cualquier
-proveedor (Heroku, AWS Fargate, DigitalOcean App Platform, etc.).
-
-- **Heroku**: añade un `Procfile` con
-  `web: uvicorn app.main:app --host=0.0.0.0 --port=${PORT}`.
-- **AWS Fargate / ECS**: utiliza el `docker-compose.yml` como referencia para
-  los servicios, crea una imagen con `docker build` y empújala a ECR.
-- **DigitalOcean**: el panel permite cargar tu `docker-compose.yml` o
-  configurar un `Dockerfile` directo.
-
-Cualquier servicio debe definir variables de entorno (`DATABASE_URL`,
-`SECRET_KEY`, etc.) y dejar que Alembic aplique las migraciones durante el
-arranque (por ejemplo, ejecutando `alembic upgrade head` en `entrypoint`).
+Visita la aplicación en **http://localhost:8080**.
 
 ---
 
-## Desarrollo y visión
+## 🔐 Endpoints clave (backend)
 
-El repositorio es la base de un SaaS tipo Zapier empresarial. Permite vender
-servicios de integración (ERP ↔ CRM, facturación, sincronización de inventario, etc.)
-como producto por suscripción. Con funcionalidades multitennant, scheduler, motor de
-workflows y un dashboard básico, el código es una caja de herramientas para
-automatización empresarial.
+| Ruta | Método | Descripción |
+|------|--------|-------------|
+| `/auth/register` | POST | registro (email, password, organization, is_admin) |
+| `/auth/login` | POST | obtiene token JWT |
+| `/auth/me` | GET | devuelve usuario actual |
+| `/workflows` | GET/POST | listar/crear workflows |
+| `/workflows/{id}` | PATCH | editar workflow |
+| `/workflows/{id}/run` | POST | ejecutar workflow manualmente |
+| `/workflows/{id}/executions` | GET | listar ejecuciones de workflow |
+| `/dashboard` | GET | conteos de workflows y ejecuciones |
+| `/admin/users` | GET/POST | gestión de usuarios (solo admins) |
+| `/admin/organizations` | GET | listar organizaciones (solo admins) |
+| `/metrics` | GET | métricas Prometheus expuestas |
 
-> 🚀 Este no es un simple proyecto de portafolio: es una *máquina para facturar
-> automatización*.  
+Para llamadas autenticadas incluya el encabezado `Authorization: Bearer <token>`.
+
+---
+
+## 🛠 Migraciones (Alembic)
+
+La carpeta `backend/alembic` contiene el entorno de migraciones. El script
+`entrypoint.sh` ya corre `alembic upgrade head` al iniciar, así que en despliegues
+no necesitas ejecutar nada adicional.
+
+Si deseas crear una migración local:
+
+```bash
+cd backend
+alembic revision --autogenerate -m "mensaje"
+alembic upgrade head
+```
+
+Asegúrate de tener la base de datos accesible (`docker compose up -d db`).
+
+---
+
+## ⚙️ Configuración de entorno
+
+Copia `.env.example` a `.env` y ajusta los valores necesarios.
+
+| Variable | Propósito |
+|----------|-----------|
+| `ENV` | `development`, `staging`, `production` |
+| `DATABASE_URL` | URL de PostgreSQL |
+| `SECRET_KEY` | clave para JWT |
+| `ACCESS_TOKEN_EXPIRE_MINUTES` | vida del token |
+
+Docker Compose carga automáticamente `.env`.
+
+---
+
+## 🧪 Desarrollo local
+
+- Backend: `cd backend && uvicorn app.main:app --reload`
+- Frontend (modo dev): `cd frontend && npm install && npm run dev`
+
+Las dependencias están listadas en `backend/requirements.txt` y
+`frontend/package.json`.
+
+---
+
+## 📦 Docker optimizado
+
+Los Dockerfiles usan imágenes `python:3.11-slim` y `node:20` con etapas de
+construcción para reducir tamaño. El frontend se construye y luego se sirve con
+`nginx`.
+
+---
+
+## ☁️ Despliegue en producción
+
+- **Heroku**: crea un `Procfile` con
+  `web: uvicorn app.main:app --host=0.0.0.0 --port=${PORT}`.
+- **AWS Fargate / ECS**: empuja la imagen a un repositorio (ECR) y usa el
+  `docker-compose.yml` como referencia.
+- **DigitalOcean App Platform**: sube el repositorio y configura las variables
+  de entorno; la plataforma puede construir con el Dockerfile.
+
+Recuerda definir `DATABASE_URL`, `SECRET_KEY`, etc. y dejar que el contenedor
+migre la base de datos en el arranque.
+
+---
+
+## 🧾 Extras y recomendaciones
+
+- Incluye un `.gitignore` adequado (venv, node_modules, archivos compilados).
+- Asegura un `LICENSE` (MIT, Apache 2.0, etc.) si publicarás código abierto.
+- Puedes añadir GitHub Actions para CI (lint, tests, build).
+- Documenta en el README cualquier decisión de diseño o cómo extender el
+  sistema.
+
+---
+
+## 🎯 Visión del proyecto
+
+Esta base de código muestra cómo construir un SaaS de automatización empresarial
+con características completas: multi‑tenant, gestión de usuarios, scheduler,
+webhooks simulados, historial y métricas. Puede servir tanto como ejemplo de
+aprendizaje como punto de partida real para un producto comercial.
+
+> 💡 **Idea fuerte**: convierte flujos de integración en un servicio vendible.
+  El código ya tiene todo lo necesario para arrancar y escalar un prototipo.
+
+---
+
+¡Adelante, clona el repositorio, juega con las migraciones y hazlo tuyo!
