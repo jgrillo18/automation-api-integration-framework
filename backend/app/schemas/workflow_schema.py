@@ -19,6 +19,9 @@ class WorkflowOut(WorkflowBase):
     id: int
     organization_id: int
 
+    class Config:
+        from_attributes = True
+
 class WorkflowUpdate(BaseModel):
     name: NameType | None = None
     type: NameType | None = None

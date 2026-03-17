@@ -19,6 +19,9 @@ class UserOut(BaseModel):
     organization_id: int
     is_admin: bool
 
+    class Config:
+        from_attributes = True
+
 class ExecutionOut(BaseModel):
     id: int
     status: str
@@ -26,7 +29,13 @@ class ExecutionOut(BaseModel):
     workflow_id: int
     details: dict | None = None
 
+    class Config:
+        from_attributes = True
+
 class OrganizationOut(BaseModel):
     id: int
     name: str
+
+    class Config:
+        from_attributes = True
 

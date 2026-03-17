@@ -6,6 +6,7 @@ from app.models.user import User
 from .deps import get_current_user
 from app.models.organization import Organization
 from app.schemas.auth_schema import RegisterSchema, LoginSchema, Token
+from app.schemas.user_schema import UserOut
 
 router = APIRouter()
 
@@ -59,9 +60,8 @@ def register(data: RegisterSchema, db: Session = Depends(get_db)):
     token = create_access_token({"sub": user.email})
     return {"access_token": token, "token_type": "bearer"}
 
-@router.get("/me")
+@router.get("/me", response_model=UserOut)
 def read_me(user: User = Depends(get_current_user)):
-    # this endpoint simply returns the current user; useful for frontend
     return user
 
 @router.post("/login", response_model=Token)

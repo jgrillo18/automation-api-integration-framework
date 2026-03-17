@@ -30,6 +30,14 @@ app.include_router(workflows, prefix="/workflows")
 app.include_router(dashboard, prefix="/dashboard")
 app.include_router(admin_routes.router, prefix="/admin")
 
+@app.get("/health")
+def health():
+    return {"status": "ok"}
+
+@app.head("/health")
+def health_head():
+    return {}
+
 # custom validation error handler (spanish messages for email)
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
