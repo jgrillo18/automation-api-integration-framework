@@ -14,7 +14,6 @@ function App() {
   const handleLogout = () => {
     localStorage.removeItem('token');
     setToken(null);
-    window.location.href = '/login';
   };
 
   return (
