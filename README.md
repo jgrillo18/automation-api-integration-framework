@@ -106,7 +106,7 @@ Render permite desplegar el backend como **Web Service** y el frontend como **St
    - **Root Directory**: `backend`
    - **Runtime**: `Python`
    - **Build Command**: `pip install -r requirements.txt`
-   - **Start Command**: `alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port $PORT`
+   - **Start Command**: `PYTHONPATH=. alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port $PORT`
 4. En **Environment Variables** agrega:
 
 | Variable | Valor |
