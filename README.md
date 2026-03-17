@@ -7,6 +7,16 @@
 ![Stack](https://img.shields.io/badge/Deploy-Render-46E3B7?style=flat-square&logo=render)
 ![Stack](https://img.shields.io/badge/Container-Docker-2496ED?style=flat-square&logo=docker)
 
+**🌐 Demo en vivo:**
+| Servicio | URL |
+|---|---|
+| **Frontend (React)** | https://automation-api-integration-framework-1.onrender.com |
+| **Backend API** | https://automation-api-integration-framework.onrender.com |
+| **Swagger UI** | https://automation-api-integration-framework.onrender.com/docs |
+| **Health check** | https://automation-api-integration-framework.onrender.com/health |
+
+> ⚠️ Instancia gratuita de Render — puede tardar ~30 s en despertar si estuvo inactiva.
+
 Plataforma SaaS multi-tenant para automatizar e integrar procesos empresariales. Permite definir workflows que conectan sistemas aislados (ERP, CRM, etc.) y ejecutarlos automáticamente con un motor propio.
 
 ---
@@ -116,7 +126,7 @@ Render permite desplegar el backend como **Web Service** y el frontend como **St
 | `ACCESS_TOKEN_EXPIRE_MINUTES` | `60` |
 | `ENV` | `production` |
 
-5. **Deploy** — El servicio queda en `https://automation-api-backend.onrender.com` (o el nombre que elijas). Copia esa URL.
+5. **Deploy** — El backend queda en `https://automation-api-integration-framework.onrender.com`. Copia esa URL.
 
 ### 2. Frontend — Static Site
 
@@ -130,18 +140,18 @@ Render permite desplegar el backend como **Web Service** y el frontend como **St
 
 | Variable | Valor |
 |---|---|
-| `VITE_API_URL` | URL HTTPS del backend (paso 1, ej. `https://automation-api-backend.onrender.com`) |
+| `VITE_API_URL` | `https://automation-api-integration-framework.onrender.com` |
 
-5. **Deploy** — El frontend queda en `https://automation-api-frontend.onrender.com`
+5. **Deploy** — El frontend queda en `https://automation-api-integration-framework-1.onrender.com`
 
 > ⚠️ La instancia gratuita de Render duerme tras 15 min de inactividad. La primera peticion puede tardar ~30 segundos.
 
-### Servicios creados
+### Servicios desplegados
 
-| Nombre | Tipo | Descripcion |
+| Nombre | Tipo | URL |
 |---|---|---|
-| `automation-api-backend` | Web Service (Python) | FastAPI + uvicorn + migraciones |
-| `automation-api-frontend` | Static Site | React/Vite servida por Render CDN |
+| `automation-api-integration-framework` | Web Service (Python) | https://automation-api-integration-framework.onrender.com |
+| `automation-api-integration-framework-1` | Static Site | https://automation-api-integration-framework-1.onrender.com |
 
 ---
 
