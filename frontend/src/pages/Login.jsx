@@ -1,9 +1,11 @@
 import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import api from "../services/api";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const navigate = useNavigate();
 
   const login = async () => {
     if (!email || !password) {
@@ -13,7 +15,7 @@ export default function Login() {
     try {
       const res = await api.post("/auth/login", { email, password });
       localStorage.setItem("token", res.data.access_token);
-      window.location.href = "/dashboard";
+      navigate("/dashboard");
     } catch (err) {
       const msg = err.response?.data?.detail || "Login failed";
       alert(msg + ". Please register if you don't have an account.");
@@ -30,7 +32,7 @@ export default function Login() {
           Ingresar
         </button>
         <p className="text-center mt-4">
-          ¿No tienes cuenta? <a href="/register" className="text-blue-400">Regístrate</a>
+          ¿No tienes cuenta? <Link to="/register" className="text-blue-400">Regístrate</Link>
         </p>
       </div>
     </div>
