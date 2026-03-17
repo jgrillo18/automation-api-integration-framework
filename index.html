@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Automation API Integration Demo</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Demo de la plataforma de automatización</h1>
+    <p>Ingresa <strong>admin/admin</strong> para ver un panel de control estático similar al backend real.</p>
+    <div id="loginScreen">
+        <input id="user" placeholder="Usuario"><br>
+        <input id="pass" placeholder="Contraseña" type="password"><br>
+        <button onclick="login()">Entrar</button>
+    </div>
+    <div id="dashboardScreen" style="display:none;">
+        <h2>Panel control de ejemplo</h2>
+        <p>Procesos: 5</p>
+        <p>Workflows: 2</p>
+        <button onclick="logout()">Cerrar sesión</button>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>
