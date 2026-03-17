@@ -1,5 +1,9 @@
+# render.yaml - referencia de configuracion
+# NO requiere Blueprint (plan de pago). Usalo como guia al crear los servicios
+# manualmente en Render. Ver README -> "Despliegue en Render" para los pasos.
+
 services:
-  # ── Backend: FastAPI ──────────────────────────────────────────────────────
+  # BACKEND: New -> Web Service -> conectar repo -> rootDir: backend
   - name: automation-api-backend
     type: web
     env: python
@@ -9,15 +13,15 @@ services:
     healthCheckPath: /health
     envVars:
       - key: DATABASE_URL
-        sync: false             # set manually in Render dashboard → Neon PostgreSQL URL
+        sync: false   # pegar URL de Neon PostgreSQL (ej. postgresql://user:pass@host/db)
       - key: SECRET_KEY
-        sync: false             # set to a long random string in production
+        sync: false   # clave secreta aleatoria larga
       - key: ACCESS_TOKEN_EXPIRE_MINUTES
         value: "60"
       - key: ENV
         value: production
 
-  # ── Frontend: React (Vite → nginx) ───────────────────────────────────────
+  # FRONTEND: New -> Static Site -> conectar repo -> rootDir: frontend
   - name: automation-api-frontend
     type: web
     env: static
@@ -26,7 +30,4 @@ services:
     staticPublishPath: ./dist
     envVars:
       - key: VITE_API_URL
-        fromService:
-          name: automation-api-backend
-          type: web
-          property: hostURL      # Render injects full https://... URL of the backend
+        sync: false   # pegar la URL HTTPS del backend despues de crearlo

@@ -94,31 +94,53 @@ docker compose up --build
 
 ---
 
-## ☁️ Despliegue en Render
+## ☁️ Despliegue en Render (plan gratuito)
 
-El `render.yaml` incluido crea dos servicios automaticamente:
+Render permite desplegar el backend como **Web Service** y el frontend como **Static Site**, ambos en el tier gratuito. No uses "Blueprint" (requiere plan de pago) — sigue estos pasos manuales:
 
-### Pasos
+### 1. Backend — Web Service
 
-1. **Conecta el repositorio** en [render.com](https://render.com) → New → Blueprint
-2. Render detectara el `render.yaml` y creara los servicios `automation-api-backend` y `automation-api-frontend`
-3. **Configura las variables de entorno del backend** (marcadas como `sync: false`):
+1. En [render.com](https://render.com) → **New → Web Service**
+2. Conecta el repositorio `jgrillo18/automation-api-integration-framework`
+3. Configura:
+   - **Root Directory**: `backend`
+   - **Runtime**: `Python`
+   - **Build Command**: `pip install -r requirements.txt`
+   - **Start Command**: `alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port $PORT`
+4. En **Environment Variables** agrega:
 
 | Variable | Valor |
 |---|---|
-| `DATABASE_URL` | URL PostgreSQL de Neon.tech u otro proveedor |
+| `DATABASE_URL` | URL PostgreSQL de Neon.tech (formato `postgresql://...`) |
 | `SECRET_KEY` | Clave aleatoria larga (min 32 chars) |
+| `ACCESS_TOKEN_EXPIRE_MINUTES` | `60` |
+| `ENV` | `production` |
 
-4. Render desplegara automaticamente en cada push a `main`
-5. Las migraciones se ejecutan automaticamente con `alembic upgrade head` al iniciar
+5. **Deploy** — El servicio queda en `https://automation-api-backend.onrender.com` (o el nombre que elijas). Copia esa URL.
 
-> El frontend recibe `VITE_API_URL` automaticamente via `fromService.hostURL` apuntando al backend.
+### 2. Frontend — Static Site
+
+1. En Render → **New → Static Site**
+2. Conecta el mismo repositorio
+3. Configura:
+   - **Root Directory**: `frontend`
+   - **Build Command**: `npm install && npm run build`
+   - **Publish Directory**: `dist`
+4. En **Environment Variables** agrega:
+
+| Variable | Valor |
+|---|---|
+| `VITE_API_URL` | URL HTTPS del backend (paso 1, ej. `https://automation-api-backend.onrender.com`) |
+
+5. **Deploy** — El frontend queda en `https://automation-api-frontend.onrender.com`
+
+> ⚠️ La instancia gratuita de Render duerme tras 15 min de inactividad. La primera peticion puede tardar ~30 segundos.
 
 ### Servicios creados
 
 | Nombre | Tipo | Descripcion |
 |---|---|---|
-| `automation-api-backend` | Web (Python) | FastAPI + uvicorn |
+| `automation-api-backend` | Web Service (Python) | FastAPI + uvicorn + migraciones |
 | `automation-api-frontend` | Static Site | React/Vite servida por Render CDN |
 
 ---
