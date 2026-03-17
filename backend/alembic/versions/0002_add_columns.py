@@ -15,14 +15,14 @@ depends_on = None
 
 
 def upgrade():
-    # users
-    op.add_column('users', sa.Column('is_admin', sa.Boolean(), nullable=False, server_default=sa.false()))
-    # workflows
-    op.add_column('workflows', sa.Column('webhook_url', sa.String(), nullable=True))
-    op.add_column('workflows', sa.Column('email', sa.String(), nullable=True))
-    op.add_column('workflows', sa.Column('slack_channel', sa.String(), nullable=True))
-    # executions
-    op.add_column('executions', sa.Column('details', sa.JSON(), nullable=True))
+    # Use IF NOT EXISTS so this migration is safe even if 0001_initial already
+    # created the tables with these columns (fresh database scenario).
+    conn = op.get_bind()
+    conn.execute(sa.text("ALTER TABLE users ADD COLUMN IF NOT EXISTS is_admin BOOLEAN NOT NULL DEFAULT false"))
+    conn.execute(sa.text("ALTER TABLE workflows ADD COLUMN IF NOT EXISTS webhook_url VARCHAR"))
+    conn.execute(sa.text("ALTER TABLE workflows ADD COLUMN IF NOT EXISTS email VARCHAR"))
+    conn.execute(sa.text("ALTER TABLE workflows ADD COLUMN IF NOT EXISTS slack_channel VARCHAR"))
+    conn.execute(sa.text("ALTER TABLE executions ADD COLUMN IF NOT EXISTS details JSON"))
 
 
 def downgrade():
